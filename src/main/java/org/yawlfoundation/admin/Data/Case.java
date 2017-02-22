@@ -12,32 +12,19 @@ public class Case {
     @GeneratedValue
     private Long caseId;
 
-    @Enumerated(EnumType.STRING)
-    private CaseStatus status;
+
 
     @ManyToOne
     @JoinColumn
     private Specification specification;
 
-    @ManyToOne
+    @ManyToOne(targetEntity = Engine.class,cascade = CascadeType.ALL)
     @JoinColumn
     private Engine engine;
-
-
-
-    public CaseStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CaseStatus status) {
-        this.status = status;
-    }
-
 
     public Long getCaseId() {
         return caseId;
     }
-
 
     public Specification getSpecification() {
         return specification;
@@ -53,5 +40,21 @@ public class Case {
 
     public void setEngine(Engine engine) {
         this.engine = engine;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return caseId.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result=false;
+        if(obj instanceof Case){
+            Case c=(Case) obj;
+            result=c.caseId.equals(c.getCaseId());
+        }
+        return result;
     }
 }

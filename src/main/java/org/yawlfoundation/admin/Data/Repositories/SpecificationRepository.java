@@ -11,4 +11,7 @@ import java.util.List;
  */
 public interface SpecificationRepository extends CrudRepository<Specification,Long>{
     public List<Specification> findByTenant(Tenant tenant);
+    public List<Specification> findByUniqueID(String uniqueID);
+
+
 }

@@ -1,6 +1,10 @@
 package org.yawlfoundation.admin.Controllers;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.yawlfoundation.admin.Data.Tenant;
+import org.yawlfoundation.admin.Utils.TenantUtil;
 import org.yawlfoundation.admin.Utils.YawlUtil;
 
 import javax.servlet.ServletException;
@@ -13,6 +17,7 @@ import java.io.OutputStreamWriter;
 /**
  * Created by gary on 16-8-4.
  */
+@Component
 public abstract class BaseServlet extends HttpServlet {
 
     protected org.slf4j.Logger logger= LoggerFactory.getLogger(this.getClass());
@@ -22,6 +27,9 @@ public abstract class BaseServlet extends HttpServlet {
         return new OutputStreamWriter(response.getOutputStream(), "UTF-8");
     }
 
+    @Autowired
+    TenantUtil tenantUtil;
+    //private Tenant tenant;
 
 
     @Override
@@ -55,8 +63,13 @@ public abstract class BaseServlet extends HttpServlet {
         }
         else {
 
-            output.append(processPostQuery(req,folders[2]));
-        }
+            try {
+                output.append(processPostQuery(req,tenantUtil.getObjectById(Long.parseLong(folders[3]))));
+
+            }catch (Exception e){
+                output.append(YawlUtil.failureMessage(e.getMessage()));
+            }
+                 }
         output.append("</response>");
 
 
@@ -68,5 +81,5 @@ public abstract class BaseServlet extends HttpServlet {
 
     }
 
-    abstract String processPostQuery(HttpServletRequest request,String tenantId);
+    abstract String processPostQuery(HttpServletRequest request,Tenant tenant);
 }

@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.yawlfoundation.admin.Data.Tenant;
-import org.yawlfoundation.admin.Utils.*;
+import org.yawlfoundation.admin.Utils.SpecificationUtil;
+import org.yawlfoundation.admin.Utils.TenantUtil;
+import org.yawlfoundation.admin.Utils.YawlUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -20,30 +22,28 @@ import java.util.UUID;
 /**
  * Created by root on 17-2-8.
  */
-@WebServlet(urlPatterns = "/yawl/ia/*")
-public class InterfaceA extends BaseServlet{
+@WebServlet(urlPatterns = "/yawl/ib/*")
+public class InterfaceB extends BaseServlet{
 
 
+    @Autowired
+    private TenantUtil tenantUtil;
 
     @Autowired
     SpecificationUtil specificationUtil;
 
     @Autowired
     private YawlUtil yawlUtil;
-    @Autowired
-    private CustomServiceUtil customServiceUtil;
-    @Autowired
-    private UserUtil userUtil;
 
-    public InterfaceA(YawlUtil yawlUtil) {
+    public InterfaceB(YawlUtil yawlUtil) {
         this.yawlUtil = yawlUtil;
     }
 
     @Override
     String processPostQuery(HttpServletRequest request,Tenant tenant) {
 
-      //  Tenant tenant=tenantUtil.getObjectById(Long.parseLong(tenantId));
-        String userID = request.getParameter("userID");
+        //Tenant tenant=tenantUtil.getObjectById(Long.parseLong(tenantId));
+
         StringBuilder msg=new StringBuilder();
 
         switch (request.getParameter("action")){
@@ -53,32 +53,9 @@ public class InterfaceA extends BaseServlet{
             case "upload": String specXML=request.getParameter("specXML");
                 msg.append(specificationUtil.loadSpecification(specXML,tenant));
                 break;
-            case "getYAWLServices": msg.append(customServiceUtil.getYAWLServices(tenant));
-                break;
-            case "getPassword":
-                if(userID.equals("admin"))
-                    msg.append("Se4tMaQCi9gr0Q2usp7P56Sk5vM=");
-                else if(userID.equals("editor"))
-                    msg.append("VfrZ/SW35S1ytFXq9Giw7+A05wA=");
-                break;
-            case "getBuildProperties":
-                msg.append(YawlUtil.getBuildProperties());
-                break;
-            case "getExternalDBGateways":
-                msg.append("<ExternalDBGateways/>");
-                break;
-            case "getList":
+            case "getSpecificationPrototypesList":
                 msg.append(specificationUtil.getSpecificationList(tenant));
                 break;
-            case "newYAWLService":
-                String serviceStr=request.getParameter("service");
-                msg.append(customServiceUtil.addYawlService(tenant,serviceStr));
-                break;
-            case "getAccounts":
-                msg.append(userUtil.getAccounts(tenant));
-                break;
-
-
             default:
                 break;
 

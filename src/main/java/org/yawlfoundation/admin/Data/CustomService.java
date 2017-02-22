@@ -1,6 +1,7 @@
 package org.yawlfoundation.admin.Data;
 
 import org.yawlfoundation.yawl.elements.YAWLServiceReference;
+import org.yawlfoundation.yawl.util.XNode;
 
 import javax.persistence.*;
 
@@ -8,17 +9,24 @@ import javax.persistence.*;
  * Created by root on 17-2-7.
  */
 @Entity
-public class CustomService {
-
-    @Id
-    @GeneratedValue
-    private Long serviceId;
+public class CustomService extends User{
 
 
     private String uri;
 
-    @ManyToOne
-    @JoinColumn
+    private boolean assignable;
+
+
+    public boolean isAssignable() {
+        return assignable;
+    }
+
+    public void setAssignable(boolean assignable) {
+        this.assignable = assignable;
+    }
+
+    @ManyToOne(targetEntity = Tenant.class)
+    @JoinColumn(name = "TENANT_ID")
     private Tenant tenant;
 
     public String getUri() {
@@ -27,14 +35,6 @@ public class CustomService {
 
     public CustomService(String uri) {
         this.uri = uri;
-    }
-
-    public Long getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(Long serviceId) {
-        this.serviceId = serviceId;
     }
 
     public Tenant getTenant() {
@@ -47,5 +47,38 @@ public class CustomService {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String toXMLComplete() {
+        XNode root = toBasicXNode();
+        root.addChild("servicename", this.getUserName());
+        root.addChild("servicepassword", this.getUserPassword());
+        root.addChild("assignable", true);
+        return root.toString();
+    }
+
+    private XNode toBasicXNode() {
+        XNode root = new XNode("yawlService");
+        root.addAttribute("id", this.getUri());
+        if (this.getDocumentation() != null) {
+            root.addChild("documentation", this.getDocumentation());
+        }
+        return root;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result=false;
+        if(obj instanceof CustomService){
+            CustomService service=(CustomService) obj;
+            result=this.getUri().equals(service.getUri());
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getUri().hashCode();
     }
 }
