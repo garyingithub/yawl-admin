@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -38,6 +39,9 @@ public class SpecificationUtil extends BaseUtil<Specification> {
     @Autowired
     private SpecificationRepository specificationRepository;
 
+    @Autowired
+            private TenantUtil tenantUtil;
+
     Logger logger= LoggerFactory.getLogger(this.getClass());
 
     @PostConstruct
@@ -45,6 +49,20 @@ public class SpecificationUtil extends BaseUtil<Specification> {
         this.repository = specificationRepository;
     }
 
+
+    public Specification getSpecificationByIdentification(String id){
+        Iterator iterator=this.specificationRepository.findByUniqueID(id).iterator();
+        if(!iterator.hasNext()){
+            return null;
+        }else {
+            return (Specification) iterator.next();
+        }
+    }
+
+    public List<Specification> getSpecificationsbyTenant(Tenant t){
+
+        return this.specificationRepository.findByTenant(t);
+    }
 
     public String getSpecificationList(Tenant t)  {
 
@@ -83,8 +101,8 @@ public class SpecificationUtil extends BaseUtil<Specification> {
             specs.append(StringUtil.wrap(spec.getRootNet().getID(), "rootNetID"));
             specs.append(StringUtil.wrap(spec.getSchemaVersion().toString(), "version"));
             specs.append(StringUtil.wrap(spec.getSpecVersion(), "specversion"));
-            //specs.append(StringUtil.wrap(_engine.getLoadStatus(spec.getSpecificationID()),
-              //      "status"));
+            specs.append(StringUtil.wrap("loaded",
+                    "status"));
             YMetaData metadata = spec.getMetaData();
             if (metadata != null) {
                 specs.append(StringUtil.wrap(metadata.getTitle(), "metaTitle"));
@@ -125,8 +143,9 @@ public class SpecificationUtil extends BaseUtil<Specification> {
                 if (this.specificationRepository.findByUniqueID(ySpecification.getID()).size() == 0) {
                     Specification s=new Specification(ySpecification);
                     s.setTenant(t);
-
+                    tenantUtil.storeObject(t);
                     this.storeObject(s);
+
                 } else {
                     String errDetail = ySpecification.getSchemaVersion().isBetaVersion() ?
                             "URI: " + ySpecification.getURI() : "UID: " + ySpecification.getID();

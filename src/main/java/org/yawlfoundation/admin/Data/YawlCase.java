@@ -6,19 +6,18 @@ import javax.persistence.*;
  * Created by root on 17-2-7.
  */
 @Entity
-public class Case {
+public class YawlCase {
 
     @Id
     @GeneratedValue
     private Long caseId;
 
 
-
     @ManyToOne
     @JoinColumn
     private Specification specification;
 
-    @ManyToOne(targetEntity = Engine.class,cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Engine.class)
     @JoinColumn
     private Engine engine;
 
@@ -51,8 +50,8 @@ public class Case {
     @Override
     public boolean equals(Object obj) {
         boolean result=false;
-        if(obj instanceof Case){
-            Case c=(Case) obj;
+        if(obj instanceof YawlCase){
+            YawlCase c=(YawlCase) obj;
             result=c.caseId.equals(c.getCaseId());
         }
         return result;

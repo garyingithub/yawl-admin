@@ -21,6 +21,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.39</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.data</groupId>
@@ -32,12 +37,6 @@
             <artifactId>h2</artifactId>
         </dependency>
 
-
-            <dependency>
-                <groupId>original-yawl</groupId>
-                <artifactId>original-yawl</artifactId>
-                <version>0.0.1.RELEASE</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -137,12 +136,7 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>5.0.0.M1</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test</artifactId>

@@ -6,10 +6,9 @@ import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.yawlfoundation.admin.Data.Specification;
 import org.yawlfoundation.admin.Data.Tenant;
-import org.yawlfoundation.admin.Utils.SpecificationUtil;
-import org.yawlfoundation.admin.Utils.TenantUtil;
-import org.yawlfoundation.admin.Utils.YawlUtil;
+import org.yawlfoundation.admin.Utils.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -35,6 +34,12 @@ public class InterfaceB extends BaseServlet{
     @Autowired
     private YawlUtil yawlUtil;
 
+    @Autowired
+    private EngineUtil engineUtil;
+
+    @Autowired
+    private CaseUtil caseUtil;
+
     public InterfaceB(YawlUtil yawlUtil) {
         this.yawlUtil = yawlUtil;
     }
@@ -56,6 +61,26 @@ public class InterfaceB extends BaseServlet{
             case "getSpecificationPrototypesList":
                 msg.append(specificationUtil.getSpecificationList(tenant));
                 break;
+            case "launchCase":
+                String specIdentifier = request.getParameter("specidentifier");
+                String specVersion = request.getParameter("specversion");
+                String specURI = request.getParameter("specuri");
+
+                Specification specification=specificationUtil.getSpecificationByIdentification(specIdentifier);
+                if(specification==null){
+                    msg.append(YawlUtil.failureMessage("No specification found with ID ["+specIdentifier+"]"));
+                }else {
+                    try {
+                        msg.append(caseUtil.launchCase(engineUtil.getRandomEngine(),specification));
+                    } catch (IOException e) {
+                        msg.append(YawlUtil.failureMessage(e.getMessage()));
+                    }
+                }
+                break;
+            case "getAllRunningCases":
+                msg.append(caseUtil.getAllRunningCases(tenant));
+                break;
+
             default:
                 break;
 

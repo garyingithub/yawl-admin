@@ -28,7 +28,7 @@ public class UserUtil extends BaseUtil<User> {
     //    Set<User> users=tenant.getUsers();
 
         StringBuilder builder=new StringBuilder();
-        for(User user:tenant.getUsers()){
+        for(User user:this.userRepository.findByTenant(tenant)){
             builder.append(user.toXML());
         }
 
@@ -38,7 +38,7 @@ public class UserUtil extends BaseUtil<User> {
 
     public String getClientPassword(Tenant tenant,String userID){
 
-        for(User user:tenant.getUsers()){
+        for(User user:this.userRepository.findByTenant(tenant)){
             if(user.getUserName().equals(userID)){
                 return user.getUserPassword();
             }

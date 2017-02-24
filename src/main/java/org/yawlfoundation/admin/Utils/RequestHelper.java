@@ -1,16 +1,14 @@
 package org.yawlfoundation.admin.Utils;
-import org.hibernate.mapping.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.yawlfoundation.admin.Data.Case;
+import org.yawlfoundation.admin.Data.YawlCase;
 import org.yawlfoundation.admin.Data.CustomService;
+import org.yawlfoundation.admin.Data.Engine;
 import org.yawlfoundation.admin.Data.Specification;
 import org.yawlfoundation.yawl.engine.interfce.Interface_Client;
 import org.yawlfoundation.yawl.logging.YLogDataItem;
 import org.yawlfoundation.yawl.logging.YLogDataItemList;
 
 
-import javax.persistence.ManyToOne;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map;
@@ -60,7 +58,7 @@ public class RequestHelper {
     private Map<String,String> connectParams(){
         Map<String,String> params=getParams("connect");
         params.put("password","Se4tMaQCi9gr0Q2usp7P56Sk5vM=");
-        params.put("userid","admin");
+        params.put("userID","admin");
 
         return params;
 
@@ -83,7 +81,7 @@ public class RequestHelper {
     }
 
 
-    private Map<String,String> launchCaseParams(Case c, String sessionHandle, Specification specification){
+    private Map<String,String> launchCaseParams(YawlCase c, String sessionHandle, Specification specification){
 
         Map<String,String> params=getParams("launchCase");
 
@@ -99,17 +97,36 @@ public class RequestHelper {
         return params;
     }
 
-    public String loadSpecification(String uri,String sessionHandle,Specification specification) throws IOException {
-        return client.forwardRequest(uri,loadSpecificationParams(sessionHandle,specification.getSpecificationXML()));
+    public String loadSpecification(Engine engine, Specification specification) throws IOException {
+        String result=client.forwardRequest(engine.getIAURI(),loadSpecificationParams(engine.getSessionHandle(),specification.getSpecificationXML()));
+
+        if(result.contains("session")){
+           result= client.forwardRequest(engine.getIAURI(),loadSpecificationParams(engine.refreshSession(this),specification.getSpecificationXML()));
+        }
+
+        return  result;
     }
 
-    public String registerService(String uri,String sessionHandle,CustomService service) throws IOException {
-        return client.forwardRequest(uri,registerServiceParams(sessionHandle,service));
+    public String registerService(Engine engine,CustomService service) throws IOException {
+        String result=client.forwardRequest(engine.getIAURI(),registerServiceParams(engine.getSessionHandle(),service));
+
+        if(result.contains("session")){
+            result= client.forwardRequest(engine.getIAURI(),registerServiceParams(engine.refreshSession(this),service));
+        }
+
+        return  result;
+
     }
 
-    public String launchCase(String uri,String sessionHandle,Case c) throws IOException {
+    public String launchCase(Engine engine,YawlCase c) throws IOException {
 
-        return client.forwardRequest(uri,launchCaseParams(c,sessionHandle,c.getSpecification()));
+        String result=client.forwardRequest(engine.getIBURI(),launchCaseParams(c,engine.refreshSession(this),c.getSpecification()));
+
+        if(result.contains("session")){
+            result= client.forwardRequest(engine.getIBURI(),launchCaseParams(c,engine.refreshSession(this),c.getSpecification()));
+        }
+
+        return  result;
 
     }
 

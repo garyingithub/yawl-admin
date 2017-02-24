@@ -72,7 +72,7 @@ public class Specification {
         this.version = version;
     }
 
-    @ManyToMany
+    @ManyToMany(targetEntity = Specification.class,fetch = FetchType.EAGER)
     private Set<CustomService> services;
 
 
@@ -139,6 +139,7 @@ public class Specification {
 
     public void setTenant(Tenant tenant) {
         this.tenant = tenant;
+        //tenant.addSpecification(this);
     }
 
     public Set<CustomService> getServices() {

@@ -2,9 +2,8 @@ package org.yawlfoundation.admin.Data;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
-import org.yawlfoundation.admin.Utils.CaseUtil;
+import org.springframework.stereotype.Component;
 import org.yawlfoundation.admin.Utils.RequestHelper;
-import org.yawlfoundation.admin.Utils.YawlUtil;
 import org.yawlfoundation.yawl.engine.interfce.Interface_Client;
 
 import javax.persistence.*;
@@ -14,7 +13,7 @@ import java.util.Set;
 /**
  * Created by root on 17-2-7.
  */
-@ComponentScan
+
 @Entity
 public class Engine {
 
@@ -31,19 +30,14 @@ public class Engine {
     @Transient
     private Interface_Client client=new Interface_Client();
 
-    @Transient
-    @Autowired
-    private RequestHelper requestHelper;
+
 
     @Transient
-    private String session;
+    private String sessionHandle;
 
-    @Transient
-    @Autowired
-    private CaseUtil caseUtil;
 
-    @OneToMany(targetEntity = Case.class,mappedBy = "engine",cascade = CascadeType.ALL)
-    private Set<Case> cases;
+    @OneToMany(targetEntity = YawlCase.class,mappedBy = "engine",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    private Set<YawlCase> yawlCases;
 
 
     public Engine(String address) {
@@ -57,45 +51,31 @@ public class Engine {
         this.engineId = engineId;
     }
 
-    public String getAddress() {
+    private String getAddress() {
         return address;
     }
 
+    public String getIAURI(){
+        return address+"/yawl/ia";
+    }
+
+    public String getIBURI(){
+        return address+"/yawl/ib";
+    }
     public void setAddress(String address) {
         this.address = address;
     }
 
-    public String launchCase(Specification specification){
-
-        String result;
-        try {
-            for(CustomService service:specification.getServices()){
-                requestHelper.registerService(this.address,session,service);
-
-            }
-        } catch (IOException e) {
-            result=YawlUtil.failureMessage(e.getMessage());
-            return result;
-        }
-
-        try {
-            requestHelper.loadSpecification(this.address,session,specification);
-        } catch (IOException e) {
-            result=YawlUtil.failureMessage(e.getMessage());
-            return result;
-        }
-
-        Case c=new Case();
-        c.setSpecification(specification);
-        c.setEngine(this);
-        caseUtil.storeObject(c);
-        try {
-            return requestHelper.launchCase(this.address,session,c);
-        } catch (IOException e) {
-            result=YawlUtil.failureMessage(e.getMessage());
-            return result;
-        }
+    public String refreshSession(RequestHelper requestHelper) throws IOException {
+        sessionHandle =requestHelper.getSessionHandle(this.getIAURI());
+        return sessionHandle;
     }
+
+    public String getSessionHandle(){
+        return sessionHandle;
+    }
+
+
 
 
 }
