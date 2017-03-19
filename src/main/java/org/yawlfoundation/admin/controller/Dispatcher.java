@@ -18,7 +18,7 @@ import java.util.Set;
  * Created by gary on 28/02/2017.
  */
 @Controller
-@RequestMapping(value = {"yawl/ib","yawl/ia"})
+@RequestMapping(value = {"/yawl/ib","/yawl/ia"})
 public class Dispatcher {
 
     private Set<String> specificationCommands=new HashSet<>();
@@ -26,16 +26,20 @@ public class Dispatcher {
     private  Set<String> userCommands=new HashSet<>();
     private  Set<String> caseCommands=new HashSet<>();
     private Set<String> yawlCommands=new HashSet<>();
+    private Set<String> workItemCommands=new HashSet<>();
 
     private  String[] specificationCommandsArray={"upload","getList","getSpecificationPrototypesList",
-            "getSpecification"};
+            "getSpecification","taskInformation"};
     private  String[] customServiceCommandsArray={"newYAWLService","getYAWLServices"};
     private String[] userCommandsArray={"connect","getPassword","getAccounts","checkConnection"};
     private String[] yawlCommandsArray={"getBuildProperties"};
+    private String[] workItemCommandsArray={"checkin","checkout","getWorkItem"};
+    private String[] caseCommandsArray={"launchCase","getAllRunningCases"};
 
 
-    private Set[] commandSets= new Set[]{specificationCommands, customServiceCommands, userCommands, caseCommands,yawlCommands};
-    private  String[] controllersPlaceHolders={Constant.FORWARD_TO_SPECIFICATION,Constant.FORWARD_TO_CUSTOMSERVICE,Constant.FORWARD_TO_USER,Constant.FORWARD_TO_CASE};
+    private Set[] commandSets= new Set[]{specificationCommands, customServiceCommands, userCommands, caseCommands,yawlCommands,workItemCommands};
+    private  String[] controllersPlaceHolders={Constant.FORWARD_TO_SPECIFICATION,Constant.FORWARD_TO_CUSTOMSERVICE,Constant.FORWARD_TO_USER,Constant.FORWARD_TO_CASE,Constant.FORWARD_TO_YAWL,Constant.FORWARD_TO_WORKITEM};
+
 
     private final Logger logger= LoggerFactory.getLogger(this.getClass());
 
@@ -45,11 +49,19 @@ public class Dispatcher {
         customServiceCommands.addAll(Arrays.asList(customServiceCommandsArray));
         userCommands.addAll(Arrays.asList(userCommandsArray));
         yawlCommands.addAll(Arrays.asList(yawlCommandsArray));
+        caseCommands.addAll(Arrays.asList(caseCommandsArray));
+        workItemCommands.addAll(Arrays.asList(workItemCommandsArray));
     }
 
 
     @RequestMapping(method = {RequestMethod.POST,RequestMethod.GET})
-    public String processRequest(@RequestParam(value = "action",defaultValue = "")String action){
+    public String processRequest(@RequestParam(value = "action",defaultValue = "")String action,
+                                 @RequestParam(value = "taskID",required = false)String taskID,
+                                 @RequestParam(value = "workItemID",required = false)String workItemID){
+
+        if(workItemID!=null){
+            return Constant.FORWARD_TO_WORKITEM;
+        }
 
         for(int i=0;i<commandSets.length;i++){
             Set commandSet=commandSets[i];

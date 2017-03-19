@@ -15,6 +15,18 @@ public class Constant {
     public static final String FORWARD_TO_USER="forward:/user";
     public static final String FORWARD_TO_CASE="forward:/case";
     public static final String FORWARD_TO_YAWL="forward:/yawl";
+    public static final String FORWARD_TO_WORKITEM="forward:/workitem";
+
+
+    public static final String DATABASE_DRIVER = "spring.datasource.driver-class-name";
+    public static final String DATABASE_URL = "spring.datasource.url";
+    public static final String DATABASE_USER = "spring.datasource.username";
+    public static final String DATABASE_PASSWORD = "spring.datasource.password";
+
+
+    public static final String SESSIONHANDLE_NAME="sessionHandle";
+
+    public static final int SESSION_RETRY_TIMES=3;
 
     public enum InterfaceType{
         INTERFACE_A,

@@ -3,7 +3,7 @@ package org.yawlfoundation.admin.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yawlfoundation.admin.data.CustomService;
-import org.yawlfoundation.admin.data.Repositories.TenantRepository;
+import org.yawlfoundation.admin.data.repository.TenantRepository;
 import org.yawlfoundation.admin.data.Tenant;
 import org.yawlfoundation.admin.data.User;
 

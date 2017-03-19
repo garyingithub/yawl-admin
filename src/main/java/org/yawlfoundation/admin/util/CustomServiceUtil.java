@@ -3,13 +3,12 @@ package org.yawlfoundation.admin.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yawlfoundation.admin.data.CustomService;
-import org.yawlfoundation.admin.data.Repositories.CustomServiceRepository;
+import org.yawlfoundation.admin.data.repository.CustomServiceRepository;
 import org.yawlfoundation.admin.data.Tenant;
 import org.yawlfoundation.yawl.elements.YAWLServiceReference;
 import org.yawlfoundation.yawl.util.HttpURLValidator;
 
 import javax.annotation.PostConstruct;
-import java.util.TreeMap;
 
 /**
  * Created by root on 17-2-7.

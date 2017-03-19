@@ -21,6 +21,7 @@ import org.yawlfoundation.yawl.logging.YLogDataItemList;
 
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map;
@@ -55,6 +56,11 @@ public class RequestHelper {
     @Autowired
     private EngineUtil engineUtil;
 
+    @Autowired
+    private ParametersFactory parametersFactory;
+
+
+
     class RequestForwader {
 
         public String forwardRequest(String uri, List<NameValuePair> parameterMap)
@@ -87,7 +93,7 @@ public class RequestHelper {
             response=client.execute(httpPost,httpContext);
             result= EntityUtils.toString(response.getEntity());
 
-            return result;
+            return stripOuterElement(result);
         }
 
     }
@@ -96,213 +102,50 @@ public class RequestHelper {
     //@Autowired
     private RequestForwader client=new RequestForwader();
 
-    private Map<String, String> getParams(String action){
-
-        Map<String,String> params=new HashMap<>();
-        params.put("action",action);
-       
-        return params;
 
 
+
+
+
+
+    public String sendRequest(Engine engine, HttpServletRequest request) throws IOException {
+       // String sessionHandle=engine.getSessionHandle();
+
+        List<NameValuePair> paramList;
+
+        paramList=parametersFactory.getParameters(request);
+        return sendRequest(engine,paramList, Constant.InterfaceType.INTERFACE_B);
     }
 
+    public String connect(Engine engine) throws IOException {
+        List<NameValuePair> list=parametersFactory.connectParams();
+        return sendRequest(engine,list, Constant.InterfaceType.INTERFACE_B);
+    }
+    public String sendRequest(Engine engine, List<NameValuePair> paramList, Constant.InterfaceType type) throws IOException {
+        String result="";
+        String sessionHandle;
+        paramList.add(new BasicNameValuePair(Constant.SESSIONHANDLE_NAME,engine.getSessionHandle()));
+        for(int i=0;i<Constant.SESSION_RETRY_TIMES;i++){
 
-    private List<NameValuePair> checkConnectionParams(String sessionHandle){
 
-        Map<String,String> params=getParams("checkConnection");
-        params.put("sessionHandle",sessionHandle);
-
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
-
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
+            result=sendRequest(type==Constant.InterfaceType.INTERFACE_A?
+                    engine.getIAURI():engine.getIBURI(),paramList);
+            if(!result.contains("session")){
+                return result;
+            }
+            sessionHandle=connect(engine);
+            paramList.remove(paramList.size()-1);
+            paramList.add(new BasicNameValuePair(Constant.SESSIONHANDLE_NAME,sessionHandle));
         }
-        return list;
+        return YawlUtil.failureMessage(result);
     }
 
-    private List<NameValuePair> connectParams(){
-        Map<String,String> params=getParams("connect");
-        params.put("password","Se4tMaQCi9gr0Q2usp7P56Sk5vM=");
-        params.put("userid","admin");
+    private String sendRequest(String uri,List<NameValuePair> params) throws IOException {
 
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
 
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
-        }
-        return list;
+        return stripOuterElement(client.forwardRequest(uri,params));
 
     }
-
-    private List<NameValuePair> loadSpecificationParams(String sessionHandle,
-                                                             String xml){
-        Map<String,String> params=getParams("upload");
-        params.put("sessionHandle",sessionHandle);
-        params.put("specXML",xml);
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
-
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
-        }
-        return list;
-    }
-
-    private List<NameValuePair> registerServiceParams(String sessionHandle,
-                                                           CustomService service){
-        Map<String,String> params=getParams("newYAWLService");
-        params.put("sessionHandle",sessionHandle);
-        params.put("service",service.toXMLComplete());
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
-
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
-        }
-        return list;
-    }
-
-    private boolean hasFailed(String result){
-        return result.contains("failure");
-    }
-
-
-
-    private List<NameValuePair> launchCaseParams(YawlCase c, String sessionHandle, Specification specification){
-
-        Map<String,String> params=getParams("launchCase");
-
-        params.put("sessionHandle",sessionHandle);
-        params.put("specidentifier", specification.getUniqueID());
-        String logData= new YLogDataItemList(
-                new YLogDataItem("launched", "name", "resourceService", "string")).toXML();
-        params.put("logData", logData);
-
-        params.put("specuri", specification.getUri());
-        params.put("specversion", specification.getVersion());
-        params.put("caseID",c.getCaseId().toString());
-
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
-
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
-        }
-        return list;
-    }
-
-    private List<NameValuePair> checkInParams(String workItemID, String sessionHandle, String data, String logPredicate){
-
-        Map<String,String> params=getParams("checkin");
-
-        params.put("workItemID",workItemID);
-        params.put("sessionHandle",sessionHandle);
-        params.put("data",data);
-        params.put("logPredicate",logPredicate);
-
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
-
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
-        }
-        return list;
-
-    }
-
-    private List<NameValuePair> checkOutParams(String workItemID, String sessionHandle){
-        Map<String,String> params=getParams("checkout");
-
-        params.put("workItemID",workItemID);
-        params.put("sessionHandle",sessionHandle);
-        List<NameValuePair> list=new ArrayList<>();
-        for(String key:params.keySet()){
-
-            BasicNameValuePair pair=new BasicNameValuePair(key,params.get(key));
-            list.add(pair);
-        }
-        return list;
-    }
-
-    public String checkIn(String workItemID,Engine engine,String data,String logPredicate) throws IOException {
-
-        String result=client.forwardRequest(engine,checkInParams(workItemID,engine.getSessionHandle(),data,logPredicate),
-                Constant.InterfaceType.INTERFACE_B);
-        if(result.contains("session")){
-            result=client.forwardRequest(engine,checkInParams(workItemID,engine.refreshSession(this),data,logPredicate),
-                    Constant.InterfaceType.INTERFACE_B);
-        }
-        return result;
-
-
-    }
-
-    public String checkOut(String workItemID,Engine engine) throws IOException {
-
-        String result=client.forwardRequest(engine,checkOutParams(workItemID,engine.getSessionHandle()), 
-                Constant.InterfaceType.INTERFACE_B);
-        if(result.contains("session")){
-            result=client.forwardRequest(engine,checkOutParams(workItemID,engine.refreshSession(this)),
-                    Constant.InterfaceType.INTERFACE_B);
-        }
-        return result;
-
-
-    }
-
-    public String loadSpecification(Engine engine, Specification specification) throws IOException {
-        String result=client.forwardRequest(engine,loadSpecificationParams(engine.getSessionHandle(),specification.getSpecificationXML()),
-                Constant.InterfaceType.INTERFACE_A);
-
-        if(result.contains("session")){
-           result= client.forwardRequest(engine,loadSpecificationParams(engine.refreshSession(this),specification.getSpecificationXML()),
-                   Constant.InterfaceType.INTERFACE_A);
-        }
-
-        return  result;
-    }
-
-    public String registerService(Engine engine,CustomService service) throws IOException {
-        String result=client.forwardRequest(engine,registerServiceParams(engine.getSessionHandle(),service),
-                Constant.InterfaceType.INTERFACE_A);
-
-        if(result.contains("session")){
-            result= client.forwardRequest(engine,registerServiceParams(engine.refreshSession(this),service),
-                    Constant.InterfaceType.INTERFACE_A);
-        }
-
-        return  result;
-
-    }
-
-    public String launchCase(Engine engine,YawlCase c) throws IOException {
-
-        String result=client.forwardRequest(engine,launchCaseParams(c,engine.refreshSession(this),c.getSpecification()),
-                Constant.InterfaceType.INTERFACE_B);
-
-        if(result.contains("session")){
-            result= client.forwardRequest(engine,launchCaseParams(c,engine.refreshSession(this),c.getSpecification()),
-                    Constant.InterfaceType.INTERFACE_B);
-        }
-
-        return  result;
-
-    }
-
-    public String getSessionHandle(Engine engine) throws IOException {
-        return client.forwardRequest(engine,connectParams(),
-                Constant.InterfaceType.INTERFACE_A);
-    }
-
-    public boolean checkConnection(Engine engine,String sessionHandle) throws IOException {
-
-        return client.forwardRequest(engine,checkConnectionParams(sessionHandle),
-                Constant.InterfaceType.INTERFACE_A).contains("success");
-    }
-
-
 
 
     public String sendRequest(String uri,Map<String,String> params) throws IOException {
@@ -314,10 +157,19 @@ public class RequestHelper {
             list.add(pair);
         }
 
-        return client.forwardRequest(uri,list);
+        return stripOuterElement(client.forwardRequest(uri,list));
 
     }
 
-
+    protected String stripOuterElement(String xml) {
+        if (xml != null) {
+            int start = xml.indexOf('>') + 1;
+            int end = xml.lastIndexOf('<');
+            if (end > start) {
+                return xml.substring(start, end);
+            }
+        }
+        return xml;
+    }
 
 }

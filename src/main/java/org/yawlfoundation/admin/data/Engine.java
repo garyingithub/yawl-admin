@@ -1,6 +1,9 @@
 package org.yawlfoundation.admin.data;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.yawlfoundation.admin.util.RequestHelper;
+import org.yawlfoundation.admin.util.RequestUtil;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -52,6 +55,7 @@ public class Engine {
         this.port = port;
     }
 
+
     @Transient
     private String sessionHandle;
 
@@ -67,7 +71,7 @@ public class Engine {
         this.engineId = engineId;
     }
 
-    private String getAddress() {
+    public String getAddress() {
         return this.hostAddress+":"+port;
     }
 
@@ -80,16 +84,18 @@ public class Engine {
     }
 
 
-    public String refreshSession(RequestHelper requestHelper) throws IOException {
-        sessionHandle =requestHelper.getSessionHandle(this);
-        return sessionHandle;
-    }
-
     public String getSessionHandle(){
         return sessionHandle;
     }
 
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this,"hostAddress","port");
+    }
 
-
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this,obj,"hostAddress","port");
+    }
 
 }

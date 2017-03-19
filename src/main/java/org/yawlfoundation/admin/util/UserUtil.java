@@ -2,7 +2,7 @@ package org.yawlfoundation.admin.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.yawlfoundation.admin.data.Repositories.UserRepository;
+import org.yawlfoundation.admin.data.repository.UserRepository;
 import org.yawlfoundation.admin.data.Tenant;
 import org.yawlfoundation.admin.data.User;
 

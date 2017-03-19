@@ -13,6 +13,8 @@ public class User {
     public User(){
 
     }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userId;

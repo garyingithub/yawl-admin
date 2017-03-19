@@ -2,9 +2,15 @@ package org.yawlfoundation.admin.util;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.yawlfoundation.admin.data.*;
-import org.yawlfoundation.admin.data.Repositories.CaseRepository;
+import org.yawlfoundation.admin.data.repository.CaseRepository;
 import org.yawlfoundation.yawl.util.XNode;
 
 import javax.annotation.PostConstruct;
@@ -23,10 +29,14 @@ public class CaseUtil extends BaseUtil<YawlCase> {
     private EngineUtil engineUtil;
 
     @Autowired
-    private RequestHelper helper;
+    private RequestUtil util;
 
     @Autowired
     private SpecificationUtil specificationUtil;
+
+    @Autowired
+    private JpaTransactionManager transactionManager;
+
 
     public Engine getEngineByCaseID(String caseID){
 
@@ -44,38 +54,55 @@ public class CaseUtil extends BaseUtil<YawlCase> {
 
     }
 
-    public String   launchCase(Engine engine,Specification specification) throws IOException {
+
+    public String  launchCase(Engine engine,Specification specification) throws IOException {
 
         String result;
 
+        result=util.loadSpecification(engine,specification);
 
-        for(CustomService service:specification.getServices()){
-            result=helper.registerService(engine,service);
-            if(YawlUtil.isFailure(result)){
-                return result;
-            }
-        }
-
-        result=helper.loadSpecification(engine,specification);
-
+       // System.out.println(result);
         if(YawlUtil.isFailure(result)&&!result.contains("already")&&!result.contains("warning")){
-
-            return result;
-        }
-        YawlCase c=new YawlCase();
-        c.setEngine(engine);
-        c.setSpecification(specification);
-
-        this.storeObject(c);
-
-        result=helper.launchCase(engine,c);
-
-        if(YawlUtil.isFailure(result)){
-            return result;
+            throw new IOException(result);
         }
 
+        TransactionTemplate template=new TransactionTemplate();
+        template.setTransactionManager(transactionManager);
 
-        return String.valueOf(c.getCaseId());
+
+        return template.execute(new TransactionCallback<String>() {
+            @Override
+            public String doInTransaction(TransactionStatus transactionStatus) {
+                String result2="";
+                YawlCase c=new YawlCase();
+                c.setEngine(engine);
+                c.setSpecification(specification);
+
+                storeObject(c);
+
+
+                try {
+                    result2=util.launchCase(engine,c);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+                if(YawlUtil.isFailure(result2)){
+                    throw new RuntimeException(result2);
+                    //throw new IOException(result2);
+                }
+
+                return String.valueOf(c.getCaseId());
+            }
+        });
+
+
+
+
+
+
+
     }
 
     public String getAllRunningCases(Tenant tenant){

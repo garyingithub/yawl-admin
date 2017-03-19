@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.yawlfoundation.admin.data.Repositories.SpecificationRepository;
+import org.yawlfoundation.admin.data.repository.SpecificationRepository;
 import org.yawlfoundation.admin.data.Specification;
 import org.yawlfoundation.admin.data.Tenant;
 import org.yawlfoundation.yawl.elements.*;
@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -59,6 +60,39 @@ public class SpecificationUtil extends BaseUtil<Specification> {
         return this.specificationRepository.findByTenant(t);
     }
 
+    public String taskInformation(String id,String taskID){
+
+        Specification specification=getSpecificationByIdentification(id);
+
+        YSpecification spec;
+        YTask task = null;
+
+        try {
+            spec = YMarshal.unmarshalSpecifications(specification.getSpecificationXML()).get(0);
+        } catch (YSyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        if (spec != null) {
+            Set<YDecomposition> decompositions = spec.getDecompositions();
+            for (YDecomposition decomposition : decompositions) {
+                if (decomposition instanceof YNet) {
+                    YNet net = (YNet) decomposition;
+                    YExternalNetElement element = net.getNetElement(taskID);
+                    if ((element != null) && (element instanceof YTask)) {
+                        task = (YTask) element;
+                        break;                                               // found it
+                    }
+                }
+            }
+        }
+
+
+        if (task != null) {
+            return task.getInformation();
+        } else {
+            return YawlUtil.failureMessage("The was no task found with ID " + taskID);
+        }
+    }
     public String getSpecificationList(Tenant t)  {
 
         List<Specification> specifications=this.specificationRepository.findByTenant(t);

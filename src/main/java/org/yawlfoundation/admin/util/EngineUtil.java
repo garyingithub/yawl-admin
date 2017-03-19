@@ -8,7 +8,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yawlfoundation.admin.data.Engine;
-import org.yawlfoundation.admin.data.Repositories.EngineRepository;
+import org.yawlfoundation.admin.data.repository.EngineRepository;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
@@ -46,12 +46,14 @@ public class EngineUtil extends BaseUtil<Engine> {
             CloseableHttpClient client= HttpClients.custom().
                     setConnectionManager(cm).
                     build();
-            engineHttpClientHashMap.put(engine,client);
+            engineHttpClientHashMap.put(engine.getAddress(),client);
         }
     }
 
     public CloseableHttpClient getEngineClient(Engine engine){
-        return engineHttpClientHashMap.get(engine);
+        //System.out.println(engine.hashCode());
+        //System.out.println(engineHttpClientHashMap.keySet().iterator().next().hashCode());
+        return engineHttpClientHashMap.get(engine.getAddress());
     }
 
 
@@ -60,8 +62,8 @@ public class EngineUtil extends BaseUtil<Engine> {
     }
 
 
-    Map<Engine, CloseableHttpClient> engineHttpClientHashMap=
-            new HashMap<Engine, CloseableHttpClient>();
+    Map<String, CloseableHttpClient> engineHttpClientHashMap=
+            new HashMap<String, CloseableHttpClient>();
 
 
 
