@@ -1,7 +1,5 @@
 package org.yawlfoundation.admin.controller;
 
-import org.apache.http.HttpRequest;
-import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +17,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by gary on 10/03/2017.
@@ -48,7 +45,7 @@ public class DefaultWorklistController {
                 caseID=workItemRecord.getCaseID();
             }
 
-            CustomService defaultWorklist=caseUtil.getResourceServiceByCaseID(caseID);
+            CustomService defaultWorklist=caseUtil.getDefaultWorklistByCaseID(caseID);
 
             Map<String,String> params=new HashMap<>();
             for(String key:request.getParameterMap().keySet()){

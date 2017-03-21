@@ -5,15 +5,24 @@ import org.hibernate.SessionFactory;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.metrics.export.MetricExportProperties;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.provider.PersistenceProvider;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisNode;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
@@ -28,7 +37,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.BeanNameViewResolver;
+import org.yawlfoundation.admin.data.Engine;
+import org.yawlfoundation.admin.data.redisUtil.RedisConfiguration;
 import org.yawlfoundation.admin.view.Plain;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.ShardedJedisPool;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
@@ -37,9 +52,7 @@ import javax.persistence.PersistenceUnit;
 import javax.sql.DataSource;
 import javax.xml.crypto.Data;
 import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 //import org.springframework.orm.hibernate4.HibernateTransactionManager;
 
@@ -47,10 +60,11 @@ import java.util.Properties;
  * Created by root on 17-2-7.
  */
 
+@EnableCaching
 @SpringBootApplication
-@Import(Plain.class)
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = {"org.yawlfoundation.admin.data.repository"})
+@Import(RedisConfiguration.class)
 public class YawlAdminApplication {
 
     public static void main(String[] args) {
@@ -156,6 +170,21 @@ public class YawlAdminApplication {
         transactionManager.setJpaProperties(jpaProperties);
         return transactionManager;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

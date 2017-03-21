@@ -3,12 +3,13 @@ package org.yawlfoundation.admin.data;
 import org.yawlfoundation.yawl.util.XNode;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * Created by root on 17-2-21.
  */
 @Entity
-public class User {
+public class User implements Serializable {
 
     public User(){
 

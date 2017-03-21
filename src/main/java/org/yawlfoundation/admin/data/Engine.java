@@ -7,6 +7,7 @@ import org.yawlfoundation.admin.util.RequestUtil;
 
 import javax.persistence.*;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -14,7 +15,9 @@ import java.util.Set;
  */
 
 @Entity
-public class Engine {
+public class Engine implements Serializable{
+
+    
 
     @Id
     @GeneratedValue

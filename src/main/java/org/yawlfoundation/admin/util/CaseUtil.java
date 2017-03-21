@@ -2,6 +2,10 @@ package org.yawlfoundation.admin.util;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -19,6 +23,7 @@ import java.io.IOException;
 /**
  * Created by root on 17-2-14.
  */
+
 @Component
 public class CaseUtil extends BaseUtil<YawlCase> {
 
@@ -38,6 +43,7 @@ public class CaseUtil extends BaseUtil<YawlCase> {
     private JpaTransactionManager transactionManager;
 
 
+    @Cacheable(cacheManager = "caseEngineRedisManager")
     public Engine getEngineByCaseID(String caseID){
 
         YawlCase yawlCase=this.getObjectById(Long.parseLong(caseID));
@@ -46,7 +52,8 @@ public class CaseUtil extends BaseUtil<YawlCase> {
 
     }
 
-    public CustomService getResourceServiceByCaseID(String caseID){
+    @Cacheable(cacheManager = "caseDefaultWorklistRedisManager")
+    public CustomService getDefaultWorklistByCaseID(String caseID){
 
         YawlCase yawlCase=this.getObjectById(Long.getLong(caseID));
 
@@ -54,6 +61,19 @@ public class CaseUtil extends BaseUtil<YawlCase> {
 
     }
 
+
+    @CachePut(cacheManager = "caseEngineRedisManager",key = "#a0.caseId")
+    public Engine bindCaseEngine(YawlCase c,Engine engine){
+
+        c.setEngine(engine);
+        return engine;
+    }
+
+    @CachePut(key = "#a0.caseId",cacheManager = "caseDefaultWorklistRedisManager")
+    public CustomService bindCaseSpecification(YawlCase c,Specification specification){
+        c.setSpecification(specification);
+        return specification.getTenant().getDefaultWorkList();
+    }
 
     public String  launchCase(Engine engine,Specification specification) throws IOException {
 
@@ -70,31 +90,28 @@ public class CaseUtil extends BaseUtil<YawlCase> {
         template.setTransactionManager(transactionManager);
 
 
-        return template.execute(new TransactionCallback<String>() {
-            @Override
-            public String doInTransaction(TransactionStatus transactionStatus) {
-                String result2="";
-                YawlCase c=new YawlCase();
-                c.setEngine(engine);
-                c.setSpecification(specification);
-
-                storeObject(c);
+        return template.execute(transactionStatus -> {
+            String result2="";
+            YawlCase c=new YawlCase();
+            bindCaseEngine(c,engine);
+            //c.setSpecification(specification);
+            bindCaseSpecification(c,specification);
+            storeObject(c);
 
 
-                try {
-                    result2=util.launchCase(engine,c);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-
-                if(YawlUtil.isFailure(result2)){
-                    throw new RuntimeException(result2);
-                    //throw new IOException(result2);
-                }
-
-                return String.valueOf(c.getCaseId());
+            try {
+                result2=util.launchCase(engine,c);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+
+
+            if(YawlUtil.isFailure(result2)){
+                throw new RuntimeException(result2);
+                //throw new IOException(result2);
+            }
+
+            return String.valueOf(c.getCaseId());
         });
 
 

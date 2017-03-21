@@ -1,5 +1,7 @@
 package org.yawlfoundation.admin.util;
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import org.yawlfoundation.admin.data.User;
@@ -15,30 +17,26 @@ import java.util.UUID;
 @Component
 public class SessionUtil {
 
-    private Map<String,User> sessionUserMap=new HashMap<>();
+    //private Map<String,User> sessionUserMap=new HashMap<>();
 
+    @CachePut(key = "#result",value = "#a0",cacheManager = "sessionRedisManager")
     public String createSessionHandle(User user){
 
-        String sessionHandle= UUID.randomUUID().toString();
 
-        sessionUserMap.put(sessionHandle,user);
-        return sessionHandle;
+        return UUID.randomUUID().toString();
     }
 
     public boolean checkSessionHandle(String sessionHandle){
 
-        if(sessionUserMap.get(sessionHandle)==null){
-            return false;
-        }else {
-            return true;
-        }
+        return getUserBySession(sessionHandle)!=null;
 
-       // return sessionUserMap.get(sessionHandle).equals(user);
 
     }
 
+    @Cacheable(cacheManager = "sessionRedisManager")
     public User getUserBySession(String sessionHandle){
-        return this.sessionUserMap.get(sessionHandle);
+
+        return null;
     }
 
 

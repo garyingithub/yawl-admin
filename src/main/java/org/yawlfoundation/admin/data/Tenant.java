@@ -5,15 +5,16 @@ package org.yawlfoundation.admin.data;
 import org.springframework.context.annotation.ComponentScan;
 
 import javax.persistence.*;
+import java.io.Serializable;
 //import javax.persistence.*;
 
 
 /**
  * Created by root on 17-2-7.
  */
-@ComponentScan
+
 @Entity
-public class Tenant {
+public class Tenant implements Serializable{
 
 
 

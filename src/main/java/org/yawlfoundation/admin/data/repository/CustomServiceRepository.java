@@ -1,5 +1,6 @@
 package org.yawlfoundation.admin.data.repository;
 
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.yawlfoundation.admin.data.CustomService;
@@ -12,6 +13,7 @@ import java.util.List;
  */
 @Repository
 public interface CustomServiceRepository extends CrudRepository<CustomService,Long> {
+
 
     public List<CustomService> findByUri(String uri);
 
