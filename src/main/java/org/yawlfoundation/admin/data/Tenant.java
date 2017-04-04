@@ -21,6 +21,8 @@ public class Tenant implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long tenantId;
+
+
     private String name;
 
 

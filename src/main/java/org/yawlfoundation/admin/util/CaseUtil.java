@@ -3,6 +3,7 @@ package org.yawlfoundation.admin.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,13 +19,16 @@ import org.yawlfoundation.admin.data.repository.CaseRepository;
 import org.yawlfoundation.yawl.util.XNode;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.Transient;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by root on 17-2-14.
  */
 
 @Component
+//@CacheConfig(cacheNames = "yawlCase",cacheManager = "caseRedisManager")
 public class CaseUtil extends BaseUtil<YawlCase> {
 
     @Autowired
@@ -43,7 +47,7 @@ public class CaseUtil extends BaseUtil<YawlCase> {
     private JpaTransactionManager transactionManager;
 
 
-    @Cacheable(cacheManager = "caseEngineRedisManager")
+    //@Cacheable(cacheManager = "caseEngineRedisManager")
     public Engine getEngineByCaseID(String caseID){
 
         YawlCase yawlCase=this.getObjectById(Long.parseLong(caseID));
@@ -52,7 +56,7 @@ public class CaseUtil extends BaseUtil<YawlCase> {
 
     }
 
-    @Cacheable(cacheManager = "caseDefaultWorklistRedisManager")
+    //@Cacheable(cacheManager = "caseDefaultWorklistRedisManager")
     public CustomService getDefaultWorklistByCaseID(String caseID){
 
         YawlCase yawlCase=this.getObjectById(Long.getLong(caseID));
@@ -62,19 +66,20 @@ public class CaseUtil extends BaseUtil<YawlCase> {
     }
 
 
-    @CachePut(cacheManager = "caseEngineRedisManager",key = "#a0.caseId")
+   // @CachePut(cacheManager = "caseEngineRedisManager",key = "#a0.caseId")
     public Engine bindCaseEngine(YawlCase c,Engine engine){
 
         c.setEngine(engine);
         return engine;
     }
 
-    @CachePut(key = "#a0.caseId",cacheManager = "caseDefaultWorklistRedisManager")
+  //  @CachePut(key = "#a0.caseId",cacheManager = "caseDefaultWorklistRedisManager")
     public CustomService bindCaseSpecification(YawlCase c,Specification specification){
         c.setSpecification(specification);
         return specification.getTenant().getDefaultWorkList();
     }
 
+   // @CacheEvict(cacheNames = "RunningCases",key = "#a1.tenant.tenantId")
     public String  launchCase(Engine engine,Specification specification) throws IOException {
 
         String result;
@@ -114,16 +119,11 @@ public class CaseUtil extends BaseUtil<YawlCase> {
             return String.valueOf(c.getCaseId());
         });
 
-
-
-
-
-
-
     }
 
-    public String getAllRunningCases(Tenant tenant){
 
+   // @CachePut(cacheNames = "RunningCases",key = "#a0.tenantId")
+    public String putAllRunningCases(Tenant tenant){
         XNode node=new XNode("AllRunningCases");
         for(Specification specification:specificationUtil.getSpecificationsbyTenant(tenant)){
             if(this.caseRepository.findBySpecification(specification).size()>0) {
@@ -140,6 +140,12 @@ public class CaseUtil extends BaseUtil<YawlCase> {
         return node.toString();
     }
 
+   // @Cacheable(cacheNames = "RunningCases",key = "#a0.tenantId")
+    public String getAllRunningCases(Tenant tenant){
+
+        return putAllRunningCases(tenant);
+    }
+
     @PostConstruct
     private void init(){
         this.repository=caseRepository;
@@ -147,6 +153,30 @@ public class CaseUtil extends BaseUtil<YawlCase> {
 
 
 
+    public YawlCase getYawlCase(String caseId){
+
+        YawlCase user=getCacheYawlCase(caseId);
+        if(getCacheYawlCase(caseId)==null){
+            user=this.getObjectById(Long.parseLong(caseId));
+            putCacheYawlCase(user);
+        }
+        return user;
+
+    }
+
+
+    @Transient
+    //@Cacheable
+    public YawlCase getCacheYawlCase(String caseId){
+        return null;
+    }
+
+
+    @Transient
+   // @CachePut(key = "#a0.caseId")
+    public YawlCase putCacheYawlCase(YawlCase yawlCase){
+        return yawlCase;
+    }
 
 
 

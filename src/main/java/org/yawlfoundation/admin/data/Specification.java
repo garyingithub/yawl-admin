@@ -1,5 +1,6 @@
 package org.yawlfoundation.admin.data;
 
+import org.hibernate.annotations.NaturalId;
 import org.yawlfoundation.yawl.elements.YSpecification;
 import org.yawlfoundation.yawl.unmarshal.YMarshal;
 
@@ -16,7 +17,7 @@ public class Specification {
     @GeneratedValue
     private Long specificationId;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT",length = 5000)
     private String specificationXML;
 
     private String name;
@@ -25,6 +26,7 @@ public class Specification {
     private String version;
 
     private String documentation;
+
 
 
     private String uniqueID;
@@ -58,6 +60,7 @@ public class Specification {
         this.dataSchema = dataSchema;
     }
 
+    @Column(columnDefinition = "TEXT")
     private String dataSchema;
 
     public String getVersion() {

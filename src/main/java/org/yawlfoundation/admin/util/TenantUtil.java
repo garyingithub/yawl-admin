@@ -1,6 +1,7 @@
 package org.yawlfoundation.admin.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
 import org.yawlfoundation.admin.data.CustomService;
 import org.yawlfoundation.admin.data.repository.TenantRepository;

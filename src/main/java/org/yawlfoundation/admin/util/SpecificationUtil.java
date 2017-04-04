@@ -55,6 +55,7 @@ public class SpecificationUtil extends BaseUtil<Specification> {
         }
     }
 
+
     public List<Specification> getSpecificationsbyTenant(Tenant t){
 
         return this.specificationRepository.findByTenant(t);

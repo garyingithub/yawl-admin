@@ -157,6 +157,7 @@ public class YawlAdminApplication {
                 env.getRequiredProperty("spring.jpa.hibernate.naming.strategy")
         );
 
+
         return jpaProperties;
     }
 
@@ -168,6 +169,8 @@ public class YawlAdminApplication {
         JpaTransactionManager transactionManager=new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory);
         transactionManager.setJpaProperties(jpaProperties);
+        transactionManager.setNestedTransactionAllowed(true);
+
         return transactionManager;
     }
 

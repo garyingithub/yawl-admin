@@ -44,6 +44,11 @@ public class YawlCase implements Serializable{
     }
 
 
+    @Transient
+    public Tenant getTenant(){
+        return getSpecification().getTenant();
+    }
+
     @Override
     public int hashCode() {
         return caseId.hashCode();

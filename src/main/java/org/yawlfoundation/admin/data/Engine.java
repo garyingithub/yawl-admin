@@ -2,6 +2,7 @@ package org.yawlfoundation.admin.data;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.NaturalId;
 import org.yawlfoundation.admin.util.RequestHelper;
 import org.yawlfoundation.admin.util.RequestUtil;
 
@@ -73,6 +74,7 @@ public class Engine implements Serializable{
     public void setEngineId(Long engineId) {
         this.engineId = engineId;
     }
+
 
     public String getAddress() {
         return this.hostAddress+":"+port;

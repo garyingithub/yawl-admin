@@ -60,7 +60,7 @@ public class ParametersFactory {
     public List<NameValuePair> loadSpecificationParams(
                                                         String xml){
 
-        List<NameValuePair> list=getParamsBasedOnAction("loadSpecification");
+        List<NameValuePair> list=getParamsBasedOnAction("upload");
         list.add(new BasicNameValuePair("specXML",xml));
 
         return list;

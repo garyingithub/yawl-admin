@@ -1,5 +1,6 @@
 package org.yawlfoundation.admin.data;
 
+import org.hibernate.annotations.NaturalId;
 import org.yawlfoundation.yawl.util.XNode;
 
 import javax.persistence.*;
@@ -15,6 +16,8 @@ public class CustomService extends User implements Serializable{
     public CustomService(){
 
     }
+
+
     private String uri;
 
     private boolean assignable;
