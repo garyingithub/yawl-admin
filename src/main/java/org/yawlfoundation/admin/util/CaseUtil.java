@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -14,6 +15,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.yawlfoundation.admin.Constant;
 import org.yawlfoundation.admin.data.*;
 import org.yawlfoundation.admin.data.repository.CaseRepository;
 import org.yawlfoundation.yawl.util.XNode;
@@ -46,14 +48,18 @@ public class CaseUtil extends BaseUtil<YawlCase> {
     @Autowired
     private JpaTransactionManager transactionManager;
 
+    @Autowired
+    private StringRedisTemplate template;
+
 
     //@Cacheable(cacheManager = "caseEngineRedisManager")
     public Engine getEngineByCaseID(String caseID){
 
         YawlCase yawlCase=this.getObjectById(Long.parseLong(caseID));
 
-        return yawlCase.getEngine();
+        String engineId= template.opsForValue().get(Constant.CASE_ENGINE_PREFIX+String.valueOf(caseID));
 
+        return engineUtil.getEngineById(engineId);
     }
 
     //@Cacheable(cacheManager = "caseDefaultWorklistRedisManager")
@@ -69,7 +75,9 @@ public class CaseUtil extends BaseUtil<YawlCase> {
    // @CachePut(cacheManager = "caseEngineRedisManager",key = "#a0.caseId")
     public Engine bindCaseEngine(YawlCase c,Engine engine){
 
-        c.setEngine(engine);
+        //c.setEngine(engine);
+        template.opsForValue().set(Constant.CASE_ENGINE_PREFIX+String.valueOf(c.getCaseId()),
+                String.valueOf(engine.getEngineId()));
         return engine;
     }
 
@@ -91,6 +99,15 @@ public class CaseUtil extends BaseUtil<YawlCase> {
             throw new IOException(result);
         }
 
+
+        //for(CustomService service:specification.getServices()){
+
+          //  result=util.registerService(engine,service);
+            //if(YawlUtil.isFailure(result)&&!result.contains("already")&&!result.contains("warning")){
+              //  throw new IOException(result);
+            //}
+        //}
+
         TransactionTemplate template=new TransactionTemplate();
         template.setTransactionManager(transactionManager);
 
@@ -98,10 +115,12 @@ public class CaseUtil extends BaseUtil<YawlCase> {
         return template.execute(transactionStatus -> {
             String result2="";
             YawlCase c=new YawlCase();
+            bindCaseSpecification(c,specification);
+
+            storeObject(c);
             bindCaseEngine(c,engine);
             //c.setSpecification(specification);
-            bindCaseSpecification(c,specification);
-            storeObject(c);
+
 
 
             try {

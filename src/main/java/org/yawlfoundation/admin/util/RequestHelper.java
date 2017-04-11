@@ -68,6 +68,9 @@ public class RequestHelper {
 
             CloseableHttpClient client= HttpClients.createDefault();
             String result;
+            if(!uri.startsWith("http")){
+                uri="http://"+uri;
+            }
             HttpPost httpPost=new HttpPost(uri);
             UrlEncodedFormEntity entity=new UrlEncodedFormEntity(parameterMap,"UTF-8");
             httpPost.setEntity(entity);

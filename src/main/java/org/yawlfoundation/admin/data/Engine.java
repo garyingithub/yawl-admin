@@ -15,7 +15,7 @@ import java.util.Set;
  * Created by root on 17-2-7.
  */
 
-@Entity
+
 public class Engine implements Serializable{
 
     
@@ -35,10 +35,11 @@ public class Engine implements Serializable{
         this.port = port;
     }
 
-
-//@Transient
-    //private Interface_Client client=new Interface_Client();
-
+    public Engine(Long id,String fullAddress){
+        this.hostAddress=fullAddress.split(":")[0];
+        this.setPort(fullAddress.split(":")[1]);
+        this.engineId=id;
+    }
 
     private String hostAddress;
     private String port;
@@ -65,7 +66,7 @@ public class Engine implements Serializable{
 
 
     @OneToMany(targetEntity = YawlCase.class,mappedBy = "engine",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    private Set<YawlCase> yawlCases;
+    //private Set<YawlCase> yawlCases;
 
 
     public Long getEngineId() {

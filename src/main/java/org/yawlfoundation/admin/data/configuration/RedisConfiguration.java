@@ -1,31 +1,17 @@
-package org.yawlfoundation.admin.data.redisUtil;
+package org.yawlfoundation.admin.data.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.support.CompositeCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
-import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.types.RedisClientInfo;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.yawlfoundation.admin.data.CustomService;
-import org.yawlfoundation.admin.data.Engine;
-import org.yawlfoundation.admin.data.User;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by gary on 20/03/2017.
@@ -35,6 +21,12 @@ public class RedisConfiguration  {
 
     @Resource
     private Environment env;
+
+
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory(){
+        return jedisConnectionFactory();
+    }
 
     @Bean
     JedisPoolConfig jedisPoolConfig(){
@@ -56,7 +48,9 @@ public class RedisConfiguration  {
         factory.setPoolConfig(jedisPoolConfig());
         factory.setUsePool(true);
         factory.setShardInfo(new JedisShardInfo(env.getRequiredProperty("spring.redis.host")));
-        return new JedisConnectionFactory();
+
+        //System.out.println(factory.getShardInfo().getHost());
+        return factory;
     }
 
 
@@ -70,24 +64,13 @@ public class RedisConfiguration  {
 
 
     @Bean
-    public RedisCacheManager sessionRedisManager(){
-        RedisTemplate<String,String> template=new StringRedisTemplate();
+    public StringRedisTemplate stringRedisTemplate(){
+        StringRedisTemplate template=new StringRedisTemplate();
         template.setConnectionFactory(jedisConnectionFactory());
         template.afterPropertiesSet();
-        RedisCacheManager cacheManager=new RedisCacheManager(template);
-        cacheManager.setUsePrefix(true);
-        return cacheManager;
+        //System.out.println(template.keys("*"));
+        return template;
     }
-
-
-
-
-
-
-
-
-
-
 
 
 }

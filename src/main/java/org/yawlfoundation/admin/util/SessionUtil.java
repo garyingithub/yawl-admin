@@ -16,7 +16,7 @@ import java.util.UUID;
  * Created by gary on 28/02/2017.
  */
 @Component
-@CacheConfig(cacheNames = "session",cacheManager = "sessionRedisManager")
+//@CacheConfig(cacheNames = "session",cacheManager = "sessionRedisManager")
 public class SessionUtil {
 
     private Map<String,User> sessionUserMap=new HashMap<>();
@@ -24,7 +24,7 @@ public class SessionUtil {
     @Autowired
     private UserUtil userUtil;
 
-    @CachePut(key = "#a0")
+  //  @CachePut(key = "#a0")
     public String putSessionCache(String sessionHandle,User user){
         //return String.valueOf(user.getUserId());
         this.sessionUserMap.put(sessionHandle,user);
@@ -59,7 +59,7 @@ public class SessionUtil {
         return this.sessionUserMap.get(sessionHandle);
     }
 
-    @Cacheable
+    //@Cacheable
     public String getUserIdBySession(String sessionHandle){
 
         return String.valueOf(this.sessionUserMap.get(sessionHandle).getUserId());

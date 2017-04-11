@@ -19,9 +19,7 @@ public class YawlCase implements Serializable{
     @JoinColumn
     private Specification specification;
 
-    @ManyToOne(targetEntity = Engine.class)
-    @JoinColumn
-    private Engine engine;
+
 
     public Long getCaseId() {
         return caseId;
@@ -35,13 +33,6 @@ public class YawlCase implements Serializable{
         this.specification = specification;
     }
 
-    public Engine getEngine() {
-        return engine;
-    }
-
-    public void setEngine(Engine engine) {
-        this.engine = engine;
-    }
 
 
     @Transient
